@@ -1,0 +1,206 @@
+{
+  "frozen": {
+    "stream_first_attempt_success": 0.25,
+    "stream_within_task_success": 0.25,
+    "final_holdout_by_scenario": {
+      "missing": 0,
+      "stale": 0,
+      "verify": 0,
+      "none": 1
+    },
+    "accepted_rule_updates": 0,
+    "final_rules": [],
+    "archive_size": 0,
+    "memory_size": 0,
+    "cost": {
+      "reflection_calls": 0,
+      "decision_forwards": 0,
+      "calibration_environment_calls": 0,
+      "retry_environment_calls": 0,
+      "parent_replays": 0
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  },
+  "no_reflection_writeback": {
+    "stream_first_attempt_success": 0.625,
+    "stream_within_task_success": 0.625,
+    "final_holdout_by_scenario": {
+      "missing": 1,
+      "stale": 1,
+      "verify": 1,
+      "none": 1
+    },
+    "accepted_rule_updates": 3,
+    "final_rules": [
+      "ask_missing",
+      "refresh_cache",
+      "verify_total"
+    ],
+    "archive_size": 0,
+    "memory_size": 0,
+    "cost": {
+      "reflection_calls": 0,
+      "decision_forwards": 8,
+      "calibration_environment_calls": 288,
+      "retry_environment_calls": 0,
+      "parent_replays": 0
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  },
+  "reflect_writeback": {
+    "stream_first_attempt_success": 0.625,
+    "stream_within_task_success": 0.625,
+    "final_holdout_by_scenario": {
+      "missing": 1,
+      "stale": 1,
+      "verify": 1,
+      "none": 1
+    },
+    "accepted_rule_updates": 3,
+    "final_rules": [
+      "ask_missing",
+      "refresh_cache",
+      "verify_total"
+    ],
+    "archive_size": 0,
+    "memory_size": 0,
+    "cost": {
+      "reflection_calls": 8,
+      "decision_forwards": 8,
+      "calibration_environment_calls": 288,
+      "retry_environment_calls": 0,
+      "parent_replays": 0
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  },
+  "rise_retry": {
+    "stream_first_attempt_success": 0.25,
+    "stream_within_task_success": 1,
+    "final_holdout_by_scenario": {
+      "missing": 0,
+      "stale": 0,
+      "verify": 0,
+      "none": 1
+    },
+    "accepted_rule_updates": 0,
+    "final_rules": [],
+    "archive_size": 0,
+    "memory_size": 0,
+    "cost": {
+      "reflection_calls": 8,
+      "decision_forwards": 8,
+      "calibration_environment_calls": 0,
+      "retry_environment_calls": 6,
+      "parent_replays": 0
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  },
+  "reasoningbank_memory": {
+    "stream_first_attempt_success": 0.25,
+    "stream_within_task_success": 1,
+    "final_holdout_by_scenario": {
+      "missing": 0,
+      "stale": 0,
+      "verify": 0,
+      "none": 1
+    },
+    "accepted_rule_updates": 0,
+    "final_rules": [],
+    "archive_size": 0,
+    "memory_size": 6,
+    "cost": {
+      "reflection_calls": 8,
+      "decision_forwards": 8,
+      "calibration_environment_calls": 0,
+      "retry_environment_calls": 6,
+      "parent_replays": 0
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  },
+  "gepa_prompt": {
+    "stream_first_attempt_success": 0.625,
+    "stream_within_task_success": 0.625,
+    "final_holdout_by_scenario": {
+      "missing": 1,
+      "stale": 1,
+      "verify": 1,
+      "none": 1
+    },
+    "accepted_rule_updates": 3,
+    "final_rules": [
+      "ask_missing",
+      "refresh_cache",
+      "verify_total"
+    ],
+    "archive_size": 0,
+    "memory_size": 0,
+    "cost": {
+      "reflection_calls": 8,
+      "decision_forwards": 8,
+      "calibration_environment_calls": 480,
+      "retry_environment_calls": 0,
+      "parent_replays": 0
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  },
+  "godel_sequential": {
+    "stream_first_attempt_success": 0.625,
+    "stream_within_task_success": 1,
+    "final_holdout_by_scenario": {
+      "missing": 1,
+      "stale": 1,
+      "verify": 1,
+      "none": 1
+    },
+    "accepted_rule_updates": 3,
+    "final_rules": [
+      "ask_missing",
+      "refresh_cache",
+      "verify_total"
+    ],
+    "archive_size": 0,
+    "memory_size": 0,
+    "cost": {
+      "reflection_calls": 8,
+      "decision_forwards": 8,
+      "calibration_environment_calls": 0,
+      "retry_environment_calls": 3,
+      "parent_replays": 0
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  },
+  "dgm_archive": {
+    "stream_first_attempt_success": 0.625,
+    "stream_within_task_success": 0.625,
+    "final_holdout_by_scenario": {
+      "missing": 1,
+      "stale": 1,
+      "verify": 1,
+      "none": 1
+    },
+    "accepted_rule_updates": 3,
+    "final_rules": [
+      "ask_missing",
+      "refresh_cache",
+      "verify_total"
+    ],
+    "archive_size": 7,
+    "memory_size": 0,
+    "cost": {
+      "reflection_calls": 8,
+      "decision_forwards": 8,
+      "calibration_environment_calls": 720,
+      "retry_environment_calls": 0,
+      "parent_replays": 2
+    },
+    "primary_environment_calls": 8,
+    "heldout_evaluation_calls": 432
+  }
+}

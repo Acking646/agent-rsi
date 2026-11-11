@@ -1,0 +1,69 @@
+{
+  "dgm": {
+    "title": "Darwin G\u00f6del Machine: Open-Ended Evolution of Self-Improving Agents",
+    "paper": "https://arxiv.org/abs/2505.22954",
+    "repository": "https://github.com/jennyzzt/dgm",
+    "provenance": "Author repository verified on GitHub. Selected original files and LICENSE bundled, referenced to main; commit not verified.",
+    "inspect": "Paper \u00a73 and Appendix C.2\u2013C.4: archive, parent selection, self-improvement prompt and evaluation.",
+    "license": "Apache-2.0"
+  },
+  "gepa": {
+    "title": "GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning",
+    "paper": "https://arxiv.org/abs/2507.19457",
+    "repository": "https://github.com/gepa-ai/gepa",
+    "provenance": "Author repository verified on GitHub. Selected original files and LICENSE bundled, referenced to main; commit not verified.",
+    "inspect": "Adapter feedback and textual reflection, candidate prompt proposal, evaluation and frontier selection.",
+    "license": "MIT"
+  },
+  "rise": {
+    "title": "Recursive Introspection: Teaching Language Model Agents How to Self-Improve",
+    "paper": "https://arxiv.org/abs/2407.18219",
+    "repository": null,
+    "provenance": "Checked the arXiv abstract and HTML version for a dedicated author repository; no RISE implementation was verified. Controlled retry baseline is included.",
+    "inspect": "Multi-turn rollout, feedback conditioning, retry evaluation and training trajectory formatting."
+  },
+  "godel": {
+    "title": "G\u00f6del Agent: A Self-Referential Agent Framework for Recursive Self-Improvement",
+    "paper": "https://aclanthology.org/2025.acl-long.1354/",
+    "repository": "https://github.com/Arvid-pku/Godel_Agent",
+    "provenance": "Author repository verified on GitHub. Selected original files and LICENSE bundled, referenced to main; commit not verified.",
+    "inspect": "Separation of update proposals, execution and evaluation in the self-referential loop.",
+    "license": "MIT"
+  },
+  "reasoningbank": {
+    "title": "ReasoningBank: Scaling Agent Self-Evolving with Reasoning Memory",
+    "paper": "https://arxiv.org/abs/2509.25140",
+    "repository": "https://github.com/google-research/reasoning-bank",
+    "provenance": "Repository linked by the arXiv paper page and verified on GitHub. Original memory files and LICENSE bundled; commit not verified.",
+    "inspect": "Distillation of reusable lessons, relevance retrieval and updates from successful and unsuccessful attempts.",
+    "license": "Apache-2.0"
+  },
+  "mi4afa": {
+    "title": "A Mechanistic Study of Automated Failure Attribution in LLM-based Agentic Systems",
+    "paper": "https://arxiv.org/abs/2610.28811",
+    "repository": "https://github.com/wendyzheng22/mi4afa",
+    "provenance": "Repository confirmed from the supplied paper and verified on GitHub. No redistribution license confirmed, so no original files are bundled.",
+    "inspect": "Paper \u00a73.1\u20133.2: probing, locator/writer selection, evaluation of interventions. This is a methodological reference."
+  },
+  "patching": {
+    "title": "Towards Best Practices of Activation Patching in Language Models: Metrics and Methods",
+    "paper": "https://arxiv.org/abs/2309.16042",
+    "repository": null,
+    "provenance": "Paper cited in the supplied Word.",
+    "inspect": "Contrastive readouts, clean/corrupted pairing and metric sensitivity."
+  },
+  "transformerlens": {
+    "title": "TransformerLens",
+    "paper": null,
+    "repository": "https://github.com/TransformerLensOrg/TransformerLens",
+    "provenance": "Supplementary tool repository; source paths not verified during packaging.",
+    "inspect": "Hooked model, cache and intervention interfaces."
+  },
+  "saelens": {
+    "title": "SAELens",
+    "paper": null,
+    "repository": "https://github.com/decoderesearch/SAELens",
+    "provenance": "Supplementary tool repository; source paths not verified during packaging.",
+    "inspect": "SAE loading, encoder/decoder vectors and reconstruction error."
+  }
+}

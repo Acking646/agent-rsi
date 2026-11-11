@@ -1,0 +1,125 @@
+{
+  "dgm": {
+    "repository": "https://github.com/jennyzzt/dgm",
+    "branch_observed": "main",
+    "commit": null,
+    "license": "Apache-2.0",
+    "files": [
+      {
+        "path": "upstream/reference_files/dgm/LICENSE",
+        "source": "https://github.com/jennyzzt/dgm/blob/main/LICENSE",
+        "bytes": 11361,
+        "sha256": "84b7504ce8dda1f37f592cdf67ad21371864583720d79ea289b0b0c75bfcdb17",
+        "git_blob_sha1": "ba43cb811f1fdc963d9601012bb51f69c2598ca0"
+      },
+      {
+        "path": "upstream/reference_files/dgm/DGM_outer.py",
+        "source": "https://github.com/jennyzzt/dgm/blob/main/DGM_outer.py",
+        "bytes": 15699,
+        "sha256": "239bc76f0e1b78210b8f7b3757b1082f6ca07db3537d6af50a45bf97709795ed",
+        "git_blob_sha1": "2c87f4bdc303d0ab3c4ad2333b03ecf0a74392be"
+      },
+      {
+        "path": "upstream/reference_files/dgm/self_improve_step.py",
+        "source": "https://github.com/jennyzzt/dgm/blob/main/self_improve_step.py",
+        "bytes": 19726,
+        "sha256": "6f2ec364b11e7f6d35391ea66896fa2394cbca3bc59d68cf7352c2a77aa8cca7",
+        "git_blob_sha1": "c8e41b5050f169959882dec1afca2ff94d69303e"
+      },
+      {
+        "path": "upstream/reference_files/dgm/coding_agent.py",
+        "source": "https://github.com/jennyzzt/dgm/blob/main/coding_agent.py",
+        "bytes": 7611,
+        "sha256": "0fe9f4806fee18a481c9298a6d1ab6d754bb81666031598d86a9da2b632a5829",
+        "git_blob_sha1": "c32dfa371159b91be5573a46472e2f1a1724282f"
+      }
+    ]
+  },
+  "gepa": {
+    "repository": "https://github.com/gepa-ai/gepa",
+    "branch_observed": "main",
+    "commit": null,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "upstream/reference_files/gepa/LICENSE",
+        "source": "https://github.com/gepa-ai/gepa/blob/main/LICENSE",
+        "bytes": 1067,
+        "sha256": "10c47467a961feb40adf3294fe27dd9cba79d4d1b7cf27173b1c34586d4126c3",
+        "git_blob_sha1": "a2d71aed19ccc43d94b9c3afe6430da9b2277f32"
+      },
+      {
+        "path": "upstream/reference_files/gepa/src/gepa/core/adapter.py",
+        "source": "https://github.com/gepa-ai/gepa/blob/main/src/gepa/core/adapter.py",
+        "bytes": 13396,
+        "sha256": "ba79fb40682f7372f386f0d39358fa4866c3d06978d4a658fcbc711617e80694",
+        "git_blob_sha1": "02fbf542cafdfeddd3f0ce299fd61d63f09465e6"
+      },
+      {
+        "path": "upstream/reference_files/gepa/src/gepa/api.py",
+        "source": "https://github.com/gepa-ai/gepa/blob/main/src/gepa/api.py",
+        "bytes": 31505,
+        "sha256": "bb984286a4dcd9b873860fba5544f6136fa1541f13b3d6ad3064df07c6a5379b",
+        "git_blob_sha1": "48514f025145829da75c8dcf276375d23cb0f240"
+      }
+    ]
+  },
+  "reasoningbank": {
+    "repository": "https://github.com/google-research/reasoning-bank",
+    "branch_observed": "main",
+    "commit": null,
+    "license": "Apache-2.0",
+    "files": [
+      {
+        "path": "upstream/reference_files/reasoningbank/LICENSE",
+        "source": "https://github.com/google-research/reasoning-bank/blob/main/LICENSE",
+        "bytes": 11357,
+        "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+        "git_blob_sha1": "7a4a3ea2424c09fbe48d455aed1eaa94d9124835"
+      },
+      {
+        "path": "upstream/reference_files/reasoningbank/WebArena/memory_management.py",
+        "source": "https://github.com/google-research/reasoning-bank/blob/main/WebArena/memory_management.py",
+        "bytes": 8011,
+        "sha256": "35b8b800180024f3446c4a295fe9d7c19d4aa2cddd0b2f2a44b6680e4d6bc4f9",
+        "git_blob_sha1": "cb852c863602b3a2597c174c2cdb7b48b5c3716e"
+      },
+      {
+        "path": "upstream/reference_files/reasoningbank/WebArena/induce_memory.py",
+        "source": "https://github.com/google-research/reasoning-bank/blob/main/WebArena/induce_memory.py",
+        "bytes": 8239,
+        "sha256": "97d7da3fe5bd3e37d05e4aa07c050b1154334951cc2cad20619774ae77e0912c",
+        "git_blob_sha1": "7dd8bc4d17505e068f11dc60a83c3a666855342a"
+      }
+    ]
+  },
+  "godel": {
+    "repository": "https://github.com/Arvid-pku/Godel_Agent",
+    "branch_observed": "main",
+    "commit": null,
+    "license": "MIT",
+    "files": [
+      {
+        "path": "upstream/reference_files/godel/LICENSE",
+        "source": "https://github.com/Arvid-pku/Godel_Agent/blob/main/LICENSE",
+        "bytes": 1065,
+        "sha256": "d4070ba091149475b67735e20e47871db3979799b9bc70c2d67c611b5f131d65",
+        "git_blob_sha1": "1cca98b7566cd47c61de7b05b5d19118b6a990de"
+      },
+      {
+        "path": "upstream/reference_files/godel/src/agent_module.py",
+        "source": "https://github.com/Arvid-pku/Godel_Agent/blob/main/src/agent_module.py",
+        "bytes": 32754,
+        "sha256": "e1607b421951860652c8f394f417874e2a15112ffa8de565ff2efb474f41c0cf",
+        "git_blob_sha1": "cb97698e98e2e52b5df07c470910a7e07712f46e"
+      },
+      {
+        "path": "upstream/reference_files/godel/src/logic.py",
+        "source": "https://github.com/Arvid-pku/Godel_Agent/blob/main/src/logic.py",
+        "bytes": 7245,
+        "sha256": "a5728997bd0e598a0b2741f51a43822028a5faf1683722c29b4fab767786117d",
+        "git_blob_sha1": "4b835507d5b0346bd885a653c13cbf1d952c81a3"
+      }
+    ]
+  }
+}
