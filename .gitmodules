@@ -1,0 +1,3 @@
+[submodule "Agent_RSI/third_party/ModularRSI"]
+	path = Agent_RSI/third_party/ModularRSI
+	url = https://github.com/IQuestLab/ModularRSI.git

@@ -57,3 +57,9 @@ python upstream/fetch.py gepa
 ```
 
 默认解析仓库 HEAD 并下载解析出的确切提交。使用输出清单中的 `commit` 配合 `--commit` 复现。脚本只下载源码快照和仓库内已有的许可证文件，不执行安装脚本。仓库尚未确认的条目可在确认作者链接后用 `--repo` 指定。
+
+## ModularRSI 官方资产
+
+官方 ModularRSI 代码已通过 submodule 固定在 `third_party/ModularRSI`。两份1000题数据 manifest、固定 revision 和学校 Linux 下载脚本位于 `data/` 与 `scripts/bootstrap_modularrsi.sh`。完整说明见 `data/README.md`。
+
+当前 `python -m rsi` 仍是购物篮 toy 机制验证入口；真实 ModularRSI/Harbor 执行适配器尚未实现。不要将 toy 结果作为真实任务实验结果。
