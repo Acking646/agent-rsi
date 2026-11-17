@@ -1,0 +1,79 @@
+{
+  "protocol_version": "agent-rsi-real-pilot-v1",
+  "seed": 2026,
+  "model": {
+    "id": "Qwen/Qwen3-8B",
+    "revision": "RESOLVE_AND_PIN_ON_SCHOOL_MACHINE",
+    "dtype": "bfloat16",
+    "device": "cuda",
+    "dense_decoder_only": true
+  },
+  "dataset": {
+    "id": "IQuestLab/ModularRSI_2000_Instances",
+    "revision": "RESOLVE_AND_PIN_ON_SCHOOL_MACHINE",
+    "domain": "tb",
+    "source_split": "train",
+    "selection": {
+      "strategy": "stratified_by_category",
+      "count": 30,
+      "seed": 2026
+    }
+  },
+  "agent": {
+    "runtime": "harbor",
+    "loop": "mini_swe_agent_linear",
+    "max_steps": 40,
+    "rollouts_per_task": 4,
+    "temperature": 0.6,
+    "top_p": 0.95
+  },
+  "harness_modules": [
+    "agent_loop",
+    "tool_use",
+    "observation_management",
+    "context_management",
+    "completion_detection"
+  ],
+  "update_operators": [
+    "ADD_GUARD",
+    "ADD_VALIDATION",
+    "RETRY_ON_FAILURE",
+    "REORDER",
+    "RETAIN",
+    "COMPRESS",
+    "RETRIEVE",
+    "STOP_RULE",
+    "NO_OP"
+  ],
+  "activation_capture": {
+    "sites": ["residual", "attention", "mlp"],
+    "layer_fractions": [0.1, 0.3, 0.5, 0.7, 0.9],
+    "stages": ["feedback_end", "reflection_each_token", "reflection_end", "update_decision"],
+    "storage": "safetensors",
+    "dtype": "float16"
+  },
+  "baselines": [
+    "h0",
+    "text_reflection",
+    "gepa",
+    "autosaddler_style",
+    "ours"
+  ],
+  "mechanism_controls": [
+    "text_classifier",
+    "linear_probe",
+    "random_norm_matched",
+    "cross_task_donor",
+    "single_token_patch",
+    "sequential_patch",
+    "zero_ablation",
+    "mean_ablation",
+    "direction_ablation",
+    "direction_steering"
+  ],
+  "evaluation": {
+    "official_verifier_only": true,
+    "task_cluster_bootstrap_samples": 2000,
+    "confidence_level": 0.95
+  }
+}

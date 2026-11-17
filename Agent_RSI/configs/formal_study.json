@@ -1,0 +1,66 @@
+{
+  "protocol_version": "agent-rsi-formal-study-v1",
+  "seed": 2026,
+  "independent_evolution_seeds": [2026, 2027, 2028],
+  "model": {
+    "primary": "Qwen/Qwen3-8B",
+    "scale_replication": "Qwen/Qwen3-14B",
+    "architecture_replication": "Qwen/Qwen3.5-9B",
+    "architecture_replication_scope": "system_level_transfer_only",
+    "revision_policy": "pin_huggingface_commit_before_first_rollout"
+  },
+  "evolution_dataset": {
+    "id": "IQuestLab/ModularRSI_2000_Instances",
+    "domains": ["tb", "swe"],
+    "official_source_split": "train",
+    "split_strategy": "category_stratified_task_disjoint",
+    "split_seed": 2026,
+    "counts_per_domain": {
+      "evolve": 80,
+      "dev_gate": 20,
+      "internal_heldout": 20
+    },
+    "rollouts_per_task": 5
+  },
+  "external_evaluation": {
+    "terminal_bench": {
+      "dataset": "terminal-bench@2.1",
+      "runner": "harbor",
+      "use_full_set": true
+    },
+    "swe_bench_development": {
+      "dataset": "SWE-bench/SWE-bench_Verified",
+      "runner": "official_swebench_cli",
+      "count": 100,
+      "selection": "repository_stratified_preregistered"
+    },
+    "swe_bench_final": {
+      "dataset": "SWE-bench/SWE-bench_Verified",
+      "runner": "official_swebench_cli",
+      "count": 500
+    }
+  },
+  "budget_matching": {
+    "match_policy_tokens": true,
+    "match_rollouts": true,
+    "match_candidate_count": true,
+    "match_verifier_calls": true,
+    "match_dev_access": true
+  },
+  "selection_rules": {
+    "probe_site_selected_on": "dev_gate",
+    "intervention_strength_selected_on": "dev_gate",
+    "harness_candidate_selected_on": "dev_gate",
+    "external_test_feedback_reused": false
+  },
+  "primary_metrics": [
+    "task_success",
+    "same_task_repair_rate",
+    "internal_heldout_gain",
+    "external_pass_at_1",
+    "regression_rate",
+    "target_module_macro_f1",
+    "update_operator_macro_f1",
+    "random_control_adjusted_causal_effect"
+  ]
+}
