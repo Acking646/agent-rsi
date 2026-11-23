@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-rsi"
+version = "0.2.0"
+description = "White-box recursive harness improvement on Harbor benchmarks"
+requires-python = ">=3.12"
+dependencies = [
+  "harbor==0.6.6",
+  "numpy>=1.26",
+  "scikit-learn>=1.5",
+  "torch>=2.4",
+  "transformers>=4.51,<5",
+  "accelerate>=1.0",
+  "safetensors>=0.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "ruff>=0.8"]
+
+[project.scripts]
+agent-rsi = "rsi.formal:main"
+
+[tool.setuptools.packages.find]
+include = ["rsi*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

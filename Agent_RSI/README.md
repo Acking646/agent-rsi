@@ -1,65 +1,75 @@
-# Agent RSI 研究代码包
+# Agent RSI
 
-原始研究方案位于 `docs/Agent_RSI方法实现(1).docx`。代码包含两组实验。机制实验定位反思激活并干预更新决策。基线套件比较不同方法如何利用反馈、记忆和版本管理。
+本仓库实现面向真实软件工程任务的 Agent RSI 系统。执行层使用 Harbor，Agent 采用 mini-SWE-agent 风格的线性循环，基础模型为可读取中间激活的 Qwen3 dense decoder-only 模型。系统不再包含购物篮或其他合成任务。
 
-## 快速运行
+## 已实现的闭环
 
-Python 3.10 或更新版本。以下命令在解压后的 `Agent_RSI_Research_Package` 目录执行。每次运行需要一个新的输出目录。
+1. Harbor 启动 ModularRSI、Terminal-Bench 或转换后的 SWE-bench 任务，并调用官方 verifier 评分。
+2. `WhiteboxHarborAgent` 在宿主机加载模型，在隔离任务容器中执行 shell 动作；每次模型调用保存 residual、attention 和 MLP 激活。
+3. 失败轨迹经过白盒诊断，生成一个受约束的结构化更新提案。
+4. `HarnessCompiler` 只允许预注册操作修改五个 Harness 模块，不执行模型生成的代码。
+5. 候选 Harness 必须通过原失败批次非退化和 task-disjoint dev 配对门控，才能成为下一代父版本。
+6. 演化结束后冻结版本，在未参与选择的 held-out 任务上评测。版本、父子关系、接受/拒绝和回滚事件均写入磁盘。
 
-```bash
-python -m pip install -r requirements.txt
-python -m rsi --out runs/mechanism-toy
-python -m rsi.baseline_suite --config configs/pilot.json --out runs/baselines-toy
-```
+五个可更新模块为 `agent_loop`、`tool_use`、`observation_management`、`context_management` 和 `completion_detection`。允许的更新操作为 `ADD_GUARD`、`ADD_VALIDATION`、`RETRY_ON_FAILURE`、`REORDER`、`RETAIN`、`COMPRESS`、`RETRIEVE`、`STOP_RULE` 和 `NO_OP`。
 
-`toy` 通过预设的合成激活和任务标签检查数据管线。演化分数和干预数值只反映程序设计。购物篮计算任务是脚本化环境，包含缺参数、报价过期、漏验算和成功四种条件。所有方法共享这个环境、任务顺序、外部验证器和操作集合。
+这里的 RSI 与 Harness offline learning 的区别在于：offline learning 只从固定日志学习一次 Harness；本系统中通过门控的子版本会在下一代真实任务执行中成为父版本，产生新的轨迹、激活、失败诊断和更新提案。外部评测始终使用冻结版本，不参与更新。
 
-## 目录
+## 代码结构
 
-| 位置 | 内容 |
+| 路径 | 作用 |
 |---|---|
-| `docs/Agent_RSI方法实现(1).docx` | 用户提供的研究方案原件 |
-| `docs/mechanism_experiment.md` | §2.1–§2.7 与源码对应关系、干预方法、结果字段 |
-| `docs/baseline_protocol.md` | 每个基线的具体实现、论文原版与简化实现的差别、评估口径 |
-| `rsi/__main__.py` | 机制实验入口 |
-| `rsi/backends.py`、`rsi/analysis.py`、`rsi/sae.py` | 模型后端、Token 对齐、Probe、干预与可选 SAE |
-| `rsi/environment.py` | 任务、验证器、更新工件与写回验收 |
-| `rsi/baselines.py` | 机制实验的固定选择、无反思与近邻检索对照 |
-| `rsi/baseline_suite.py` | 八种方法的共享任务流评估 |
-| `configs/pilot.json` | 任务流、样本数、搜索候选数、检索阈值 |
-| `docs/upstream_code_map.md` | 上游函数到本项目接口的对照 |
-| `upstream/reference_files/` | 四个作者仓库的关键原始源码和许可证 |
-| `upstream/reference_files_manifest.json` | 逐文件来源和内容哈希 |
-| `upstream/sources.json` | 论文链接、仓库来源、借鉴位置及核验状态 |
-| `upstream/fetch.py` | 下载公开 Git 仓库的源码快照，记录提交、SHA-256 和许可证文件 |
-| `examples/` | 默认配置下验证通过的两份模拟运行摘要 |
+| `rsi/adapters/harbor_agent.py` | Harbor Agent、Qwen3 推理、容器工具调用和逐调用激活采集 |
+| `rsi/adapters/harbor_records.py` | Harbor 官方结果到统一 EpisodeRecord 的转换 |
+| `rsi/harness/` | 五模块 Harness schema 与结构化更新编译器 |
+| `rsi/evolution/version_store.py` | 版本谱系、接受/拒绝、active 指针和回滚记录 |
+| `rsi/datasets.py` | ModularRSI 的 evolve/dev/held-out 固定切分 |
+| `rsi/formal.py` | 真实 pilot 与多代 evolve 主入口 |
+| `rsi/mechanism/` | task-disjoint 文本分类器和逐层线性 Probe |
+| `configs/real_pilot.json` | Qwen3、Harbor、激活层和评测配置 |
+| `scripts/run_external_eval.sh` | 冻结 Harness 的 Terminal-Bench/SWE-bench 外部评测入口 |
+| `third_party/ModularRSI` | 固定提交的官方 ModularRSI/Harbor 子模块 |
 
-## 换成真实模型
+## 正式运行入口
 
-两个入口共用冻结的 Hugging Face 模型后端。模型需要提供 Llama/Qwen 风格的 decoder blocks。下面的层号从 0 起算，按模型深度修改。用本地路径可避免运行时下载模型。
+所有输出目录必须是新目录。下面的 `DATASET_ROOT` 指向官方 ModularRSI 数据根目录，其下应有 `tb/manifest.json`、`tb/tasks/`、`swe/manifest.json` 和 `swe/tasks/`。
 
 ```bash
-python -m pip install -r requirements-hf.txt
-python -m rsi --backend hf --model /path/to/checkpoint --device cuda --layers 2 6 10 --cases-per-split 3 --out runs/mechanism-hf
-python -m rsi.baseline_suite --backend hf --model /path/to/checkpoint --device cuda --layers 2 --out runs/baselines-hf
+python -m rsi --config configs/real_pilot.json pilot \
+  --dataset-root "$DATASET_ROOT" --domain tb \
+  --max-tasks 30 --out runs/pilot-tb
+
+python -m rsi --config configs/real_pilot.json evolve \
+  --dataset-root "$DATASET_ROOT" --domain tb \
+  --generations 3 --candidates 3 \
+  --out runs/evolve-tb
 ```
 
-如 tokenizer 无法将 A–D 候选编码成相同前缀后的独立单 Token，后端会报出具体标签。可在 `backends.py` 中调整决策后缀或标签，并重新校验。当前环境验证了模拟后端的两组实验，真实 checkpoint 和 SAE 仍需在有 PyTorch 的环境运行验证。
-
-## 上游源码
-
-包内附 DGM、GEPA、ReasoningBank、Gödel Agent 的关键原始文件和许可证。整库 ZIP 下载超时，逐文件下载成功。原文件从公开 `main` 分支下载，附 SHA-256 和 Git blob 哈希，未记录未核实的提交号。受控实验运行本项目的独立实现。逐项来源和接口见 `docs/upstream_code_map.md`。
+机制数据采集和 Probe 使用同一真实任务执行器，并按任务划分训练、开发和测试集：
 
 ```bash
-python upstream/fetch.py --list
-python upstream/fetch.py dgm
-python upstream/fetch.py gepa
+python -m rsi.mechanism.collect \
+  --config configs/real_pilot.json \
+  --dataset-root "$DATASET_ROOT" --domain tb \
+  --out runs/mechanism-tb
 ```
 
-默认解析仓库 HEAD 并下载解析出的确切提交。使用输出清单中的 `commit` 配合 `--commit` 复现。脚本只下载源码快照和仓库内已有的许可证文件，不执行安装脚本。仓库尚未确认的条目可在确认作者链接后用 `--repo` 指定。
+冻结版本的外部评测：
 
-## ModularRSI 官方资产
+```bash
+HARNESS_PATH=runs/evolve-tb/lineage/active-harness.json \
+DATASET=terminal-bench@2.1 \
+bash scripts/run_external_eval.sh
 
-官方 ModularRSI 代码已通过 submodule 固定在 `third_party/ModularRSI`。两份1000题数据 manifest、固定 revision 和学校 Linux 下载脚本位于 `data/` 与 `scripts/bootstrap_modularrsi.sh`。完整说明见 `data/README.md`。
+HARNESS_PATH=runs/evolve-swe/lineage/active-harness.json \
+DATASET_PATH=/path/to/harbor-swebench-tasks \
+bash scripts/run_external_eval.sh
+```
 
-当前 `python -m rsi` 仍是购物篮 toy 机制验证入口；真实 ModularRSI/Harbor 执行适配器尚未实现。不要将 toy 结果作为真实任务实验结果。
+`DATASET_PATH` 应是 Harbor 格式的 SWE-bench 任务目录，可由 SWE-bench 的 Harbor 转换工具生成。实际模型、Docker、GPU 和完整数据在学校 Linux 机器上运行；当前仓库保存代码、固定清单和实验协议，不把大规模模型或任务数据提交到 Git。
+
+## 输出与审计
+
+每个任务运行保存 Harbor 原始结果、`episodes.jsonl`、Harness 快照、逐次模型调用的激活文件和汇总指标。`lineage/versions/` 保存所有候选版本，`lineage/events.jsonl` 保存门控决定，`lineage/active-harness.json` 是可直接用于外部评测的冻结版本。
+
+本地静态验证覆盖五模块 schema、结构化操作编译、版本接受/拒绝/回滚以及固定任务切分。真实 benchmark 分数必须在具备相应数据、容器和模型的 Linux GPU 机器上产生。

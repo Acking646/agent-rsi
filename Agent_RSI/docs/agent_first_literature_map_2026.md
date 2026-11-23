@@ -49,7 +49,7 @@ Probe、SAE、activation patching 和 steering 用于解释这条 Agent 链中�
 
 本地目录：`agent论文/失败归因与表示学习`
 
-MAST 提供多 Agent 系统失败分类和真实失败轨迹。它适合扩展当前单一购物篮环境，使研究覆盖规范理解、Agent 间不一致、协调失败和验证失败。
+MAST 提供多 Agent 系统失败分类和真实失败轨迹。它适合把当前单 Agent 真实任务系统扩展到多 Agent 失败轨迹，使研究覆盖规范理解、Agent 间不一致、协调失败和验证失败。
 
 内部机制接口：
 
