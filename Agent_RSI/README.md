@@ -27,6 +27,8 @@
 | `rsi/formal.py` | 真实 pilot 与多代 evolve 主入口 |
 | `rsi/mechanism/` | task-disjoint 文本分类器和逐层线性 Probe |
 | `configs/real_pilot.json` | Qwen3、Harbor、激活层和评测配置 |
+| `rsi/baselines/` | Text Reflection、GEPA、AutoSaddler 官方代码适配 |
+| `docs/baseline_implementations.md` | 固定上游版本、语义差异与运行命令 |
 | `scripts/run_external_eval.sh` | 冻结 Harness 的 Terminal-Bench/SWE-bench 外部评测入口 |
 | `third_party/ModularRSI` | 固定提交的官方 ModularRSI/Harbor 子模块 |
 

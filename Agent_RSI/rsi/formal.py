@@ -63,6 +63,7 @@ class FormalRunner:
         harness: HarnessSpec,
         run_name: str,
         rollouts: int,
+        reflection_memory: dict[str, str] | None = None,
     ) -> list[Any]:
         from harbor.models.trial.config import (
             AgentConfig,
@@ -97,6 +98,7 @@ class FormalRunner:
                     "thinking": bool(self.agent.get("thinking", True)),
                     "seed": seed,
                     "workdir": self.agent.get("workdir"),
+                    "reflection_memory": (reflection_memory or {}).get(task.name),
                 }
                 trial_config = TrialConfig(
                     task=TaskConfig(path=task.path.resolve()),
@@ -369,26 +371,80 @@ async def evolve(args, config):
     )
 
 
+async def text_reflection_baseline(args, config):
+    from rsi.baselines.text_reflection import run_text_reflection
+
+    tasks = modularrsi_splits(args.dataset_root, args.domain, int(config["seed"]))[
+        "pilot"
+    ][: args.max_tasks or None]
+    runner = FormalRunner(config, args.out)
+    await run_text_reflection(
+        runner,
+        tasks,
+        rollouts=args.rollouts or 1,
+    )
+
+
+def gepa_baseline(args, config):
+    from rsi.baselines.gepa import run_gepa
+
+    splits = modularrsi_splits(args.dataset_root, args.domain, int(config["seed"]))
+    runner = FormalRunner(config, args.out)
+    run_gepa(
+        runner,
+        splits["evolve"][: args.max_evolve_tasks or None],
+        splits["dev"][: args.max_dev_tasks or None],
+        splits["heldout"][: args.max_heldout_tasks or None],
+        max_metric_calls=args.max_metric_calls,
+        reflection_minibatch_size=args.reflection_minibatch_size,
+        rollouts=args.rollouts or 1,
+    )
+
+
+def autosaddler_baseline(args, config):
+    from rsi.baselines.autosaddler import run_autosaddler
+
+    splits = modularrsi_splits(args.dataset_root, args.domain, int(config["seed"]))
+    runner = FormalRunner(config, args.out)
+    run_autosaddler(
+        runner,
+        splits["evolve"][: args.max_evolve_tasks or None],
+        splits["dev"][: args.max_dev_tasks or None],
+        splits["heldout"][: args.max_heldout_tasks or None],
+        max_rollouts=args.max_rollouts,
+        max_iterations=args.max_iterations,
+        batch_size=args.batch_size,
+        rollouts=args.rollouts or 1,
+    )
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path("configs/real_pilot.json"))
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("pilot", "evolve"):
+    for name in ("pilot", "evolve", "text-reflection", "gepa", "autosaddler"):
         p = sub.add_parser(name)
         p.add_argument("--dataset-root", type=Path, required=True)
         p.add_argument("--domain", choices=("tb", "swe"), default="tb")
         p.add_argument("--out", type=Path, required=True)
         p.add_argument("--rollouts", type=int)
-        if name == "pilot":
+        if name in {"pilot", "text-reflection"}:
             p.add_argument("--max-tasks", type=int)
         else:
+            p.add_argument("--max-evolve-tasks", type=int)
+            p.add_argument("--max-dev-tasks", type=int)
+            p.add_argument("--max-heldout-tasks", type=int)
+        if name == "evolve":
             p.add_argument("--generations", type=int, default=3)
             p.add_argument("--candidates", type=int, default=3)
             p.add_argument("--min-gain", type=float, default=0.01)
             p.add_argument("--max-regression", type=float, default=0.05)
-            p.add_argument("--max-evolve-tasks", type=int)
-            p.add_argument("--max-dev-tasks", type=int)
-            p.add_argument("--max-heldout-tasks", type=int)
+        elif name == "gepa":
+            p.add_argument("--max-metric-calls", type=int, default=400)
+            p.add_argument("--reflection-minibatch-size", type=int, default=3)
+        elif name == "autosaddler":
+            p.add_argument("--max-rollouts", type=int, default=400)
+            p.add_argument("--max-iterations", type=int, default=3)
+            p.add_argument("--batch-size", type=int, default=8)
     return parser.parse_args()
 
 
@@ -397,9 +453,16 @@ def main():
     config = json.loads(args.config.read_text(encoding="utf-8"))
     if args.out.exists():
         raise SystemExit("--out must be a new directory")
-    asyncio.run(
-        pilot(args, config) if args.command == "pilot" else evolve(args, config)
-    )
+    if args.command == "pilot":
+        asyncio.run(pilot(args, config))
+    elif args.command == "evolve":
+        asyncio.run(evolve(args, config))
+    elif args.command == "text-reflection":
+        asyncio.run(text_reflection_baseline(args, config))
+    elif args.command == "gepa":
+        gepa_baseline(args, config)
+    else:
+        autosaddler_baseline(args, config)
 
 
 if __name__ == "__main__":

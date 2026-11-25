@@ -1,3 +1,12 @@
 [submodule "Agent_RSI/third_party/ModularRSI"]
 	path = Agent_RSI/third_party/ModularRSI
 	url = https://github.com/IQuestLab/ModularRSI.git
+[submodule "Agent_RSI/third_party/Reflexion"]
+	path = Agent_RSI/third_party/Reflexion
+	url = https://github.com/noahshinn/reflexion.git
+[submodule "Agent_RSI/third_party/GEPA"]
+	path = Agent_RSI/third_party/GEPA
+	url = https://github.com/gepa-ai/gepa.git
+[submodule "Agent_RSI/third_party/AutoSaddler"]
+	path = Agent_RSI/third_party/AutoSaddler
+	url = https://github.com/microsoft/AutoSaddler.git

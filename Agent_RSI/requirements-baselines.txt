@@ -1,0 +1,3 @@
+# Official optimizer packages pinned by Git submodule commit.
+-e ./third_party/GEPA
+-e ./third_party/AutoSaddler

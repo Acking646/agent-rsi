@@ -260,6 +260,7 @@ class WhiteboxHarborAgent(BaseAgent):
         thinking: bool = True,
         seed: int = 2026,
         workdir: str | None = None,
+        reflection_memory: str | None = None,
         extra_env: dict | None = None,
         **kwargs,
     ):
@@ -280,6 +281,7 @@ class WhiteboxHarborAgent(BaseAgent):
         self.thinking = thinking
         self.seed = seed
         self.workdir = workdir
+        self.reflection_memory = (reflection_memory or "").strip()
         self.extra_env = extra_env or {}
 
     @staticmethod
@@ -293,7 +295,7 @@ class WhiteboxHarborAgent(BaseAgent):
         return None
 
     def _system_prompt(self) -> str:
-        return (
+        prompt = (
             "You are a software-engineering agent operating in a private benchmark container.\n"
             "Follow the five harness modules below. Never inspect hidden tests, solution files, gold "
             "patches, or verifier logs. Respond with one JSON object and no prose outside it:\n"
@@ -301,6 +303,13 @@ class WhiteboxHarborAgent(BaseAgent):
             '"task_complete":false,"completion_evidence":""}\n\n'
             + self.harness.prompt()
         )
+        if self.reflection_memory:
+            prompt += (
+                "\n\n## Failure reflection from the previous attempt\n"
+                "Treat this as task-local retry memory. Check it against current evidence; "
+                "do not assume it is correct.\n" + self.reflection_memory
+            )
+        return prompt
 
     def _trim_messages(self, messages: list[dict[str, str]]) -> list[dict[str, str]]:
         limit = int(
@@ -472,6 +481,7 @@ class WhiteboxHarborAgent(BaseAgent):
             "steps": steps,
             "model_calls": calls,
             "messages": messages,
+            "reflection_memory": self.reflection_memory,
         }
         trace_path = self.logs_dir / "agent_rsi_trace.json"
         trace_path.write_text(
@@ -534,3 +544,46 @@ def generate_structured_update(
         "call": call,
         "raw": value,
     }
+
+
+def generate_text_reflection(
+    *,
+    model_name: str,
+    revision: str | None,
+    device: str,
+    dtype: str,
+    layers: tuple[int, ...],
+    episode: dict[str, Any],
+    output_path: Path,
+    seed: int,
+    thinking: bool,
+) -> tuple[str, dict[str, Any]]:
+    """Generate Reflexion-style task-local verbal memory after a failed attempt."""
+    system = (
+        "Review one failed software-agent attempt and write a concise reflection for a "
+        "second attempt on the same task. Identify the likely mistake, cite observed "
+        "evidence, and give a concrete revised plan. Do not propose persistent harness "
+        "changes and do not invent hidden-test information. Return one JSON object with "
+        "a single string field named reflection."
+    )
+    model = get_model(model_name, revision, device, dtype, layers)
+    call = model.generate(
+        [
+            {"role": "system", "content": system},
+            {
+                "role": "user",
+                "content": json.dumps(episode, ensure_ascii=False, default=str)[-60000:],
+            },
+        ],
+        output_path,
+        max_new_tokens=768,
+        temperature=0.0,
+        top_p=1.0,
+        thinking=thinking,
+        seed=seed,
+    )
+    value = _extract_json(call["text"])
+    reflection = str(value.get("reflection", "")).strip()
+    if not reflection:
+        raise ValueError("Reflection model returned an empty reflection")
+    return reflection, {"call": call, "raw": value}

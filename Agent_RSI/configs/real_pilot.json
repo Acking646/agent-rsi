@@ -78,6 +78,9 @@
                            },
     "baselines":  [
                       "h0",
+                      "text_reflection",
+                      "gepa",
+                      "autosaddler",
                       "ours"
                   ],
     "mechanism_controls":  [
