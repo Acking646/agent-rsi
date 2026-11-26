@@ -53,6 +53,39 @@ def modularrsi_splits(
     return selected
 
 
+def modularrsi_paper_tasks(
+    dataset_root: str | Path,
+    domain: str,
+    seed: int = 0,
+) -> list[SelectedTask]:
+    """Return the paper/GitHub evolution set: all 120 manifest-train tasks.
+
+    The ModularRSI release marks exactly 120 tasks per domain as ``train``.
+    The upstream launcher uses that split directly (optionally shuffled with
+    task seed 0); it does not create our internal 80/20/20 gate split.
+    """
+    root = Path(dataset_root) / domain
+    manifest_path = root / "manifest.json"
+    tasks_dir = root / "tasks"
+    if not manifest_path.is_file() or not tasks_dir.is_dir():
+        raise FileNotFoundError(
+            f"Expected ModularRSI domain with manifest.json and tasks/: {root}"
+        )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    rows = [row for row in manifest["tasks"] if row.get("split") == "train"]
+    if len(rows) != 120:
+        raise ValueError(f"Expected 120 ModularRSI train tasks, found {len(rows)}")
+    rows = list(rows)
+    random.Random(seed).shuffle(rows)
+    selected = []
+    for row in rows:
+        path = tasks_dir / row["name"]
+        if not path.is_dir():
+            raise FileNotFoundError(f"Task missing from checkout: {path}")
+        selected.append(SelectedTask(row["name"], path, "evolution", domain))
+    return selected
+
+
 def local_harbor_tasks(
     tasks_dir: str | Path,
     domain: str,

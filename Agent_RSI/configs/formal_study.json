@@ -1,43 +1,62 @@
 {
-  "protocol_version": "agent-rsi-formal-study-v1",
+  "protocol_version": "modularrsi-paper-v1",
   "seed": 2026,
-  "independent_evolution_seeds": [2026, 2027, 2028],
+  "independent_evolution_seeds": [
+    2026,
+    2027,
+    2028
+  ],
   "model": {
     "primary": "Qwen/Qwen3-8B",
     "scale_replication": "Qwen/Qwen3-14B",
     "architecture_replication": "Qwen/Qwen3.5-9B",
     "architecture_replication_scope": "system_level_transfer_only",
-    "revision_policy": "pin_huggingface_commit_before_first_rollout"
+    "revision_policy": "pin_huggingface_commit_before_first_rollout",
+    "paper_reference_models": [
+      "DeepSeek-V4-Flash-Preview",
+      "DeepSeek-V4-Flash-0731"
+    ],
+    "execution_model": "Qwen/Qwen3-8B (white-box local adapter)",
+    "id": "Qwen/Qwen3-8B",
+    "revision": null,
+    "dtype": "bfloat16",
+    "device": "cuda"
   },
   "evolution_dataset": {
     "id": "IQuestLab/ModularRSI_2000_Instances",
-    "domains": ["tb", "swe"],
+    "domains": [
+      "tb",
+      "swe"
+    ],
     "official_source_split": "train",
-    "split_strategy": "category_stratified_task_disjoint",
-    "split_seed": 2026,
-    "counts_per_domain": {
-      "evolve": 80,
-      "dev_gate": 20,
-      "internal_heldout": 20
-    },
-    "rollouts_per_task": 5
+    "selection_strategy": "all_manifest_train_tasks",
+    "task_seed": 0,
+    "tasks_per_domain": 120,
+    "epochs": 3,
+    "batch_size": 10,
+    "attempts_per_task": 3,
+    "reflect_every": 10,
+    "support_split": "train"
   },
   "external_evaluation": {
     "terminal_bench": {
-      "dataset": "terminal-bench@2.1",
+      "dataset": "terminal-bench@2.0",
       "runner": "harbor",
-      "use_full_set": true
+      "use_full_set": true,
+      "attempts": 3
     },
     "swe_bench_development": {
       "dataset": "SWE-bench/SWE-bench_Verified",
       "runner": "official_swebench_cli",
       "count": 100,
-      "selection": "repository_stratified_preregistered"
+      "selection": "repository_stratified_preregistered",
+      "attempts": 3
     },
     "swe_bench_final": {
       "dataset": "SWE-bench/SWE-bench_Verified",
       "runner": "official_swebench_cli",
-      "count": 500
+      "count": 500,
+      "attempts": 3
     }
   },
   "budget_matching": {
@@ -45,22 +64,39 @@
     "match_rollouts": true,
     "match_candidate_count": true,
     "match_verifier_calls": true,
-    "match_dev_access": true
-  },
-  "selection_rules": {
-    "probe_site_selected_on": "dev_gate",
-    "intervention_strength_selected_on": "dev_gate",
-    "harness_candidate_selected_on": "dev_gate",
-    "external_test_feedback_reused": false
+    "match_dev_access": false
   },
   "primary_metrics": [
-    "task_success",
+    "accuracy",
+    "pass_at_3",
+    "pass_all_3",
+    "step_num",
     "same_task_repair_rate",
-    "internal_heldout_gain",
-    "external_pass_at_1",
-    "regression_rate",
-    "target_module_macro_f1",
-    "update_operator_macro_f1",
-    "random_control_adjusted_causal_effect"
-  ]
+    "external_pass_at_1"
+  ],
+  "protocol": "modularrsi-paper-v1",
+  "task_seed": 0,
+  "metrics": [
+    "accuracy",
+    "pass_at_3",
+    "pass_all_3",
+    "step_num"
+  ],
+  "dataset": {
+    "id": "IQuestLab/ModularRSI_2000_Instances",
+    "revision": "610b70d487a17c666e67f3c75dc06bf7a34fd569",
+    "source_split": "train"
+  },
+  "agent": {
+    "runtime": "harbor",
+    "loop": "terminus-2-modular-paper-compatible",
+    "max_steps": 40,
+    "rollouts_per_task": 3,
+    "attempts": 3,
+    "temperature": 0.0,
+    "top_p": 0.95,
+    "environment": "docker",
+    "max_new_tokens": 768,
+    "thinking": true
+  }
 }

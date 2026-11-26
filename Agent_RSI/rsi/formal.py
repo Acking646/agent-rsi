@@ -13,7 +13,12 @@ from typing import Any
 
 from rsi.adapters.harbor_agent import generate_structured_update
 from rsi.adapters.harbor_records import from_trial_result, with_diagnosis
-from rsi.datasets import SelectedTask, modularrsi_splits, selection_digest
+from rsi.datasets import (
+    SelectedTask,
+    modularrsi_paper_tasks,
+    modularrsi_splits,
+    selection_digest,
+)
 from rsi.evolution.version_store import GateDecision, VersionStore
 from rsi.harness.compiler import HarnessCompiler
 from rsi.harness.schema import HarnessSpec
@@ -138,12 +143,32 @@ class FormalRunner:
     @staticmethod
     def summary(records, tasks, harness):
         successes = sum(int(record.success) for record in records)
+        by_task = {}
+        steps = []
+        for record in records:
+            by_task.setdefault(record.task.task_id, []).append(record)
+            steps.append(len(record.steps))
+        triplets = [rows[:3] for rows in by_task.values() if len(rows) >= 3]
         return {
             "harness_version": harness.version_id,
             "tasks": len(tasks),
             "rollouts": len(records),
             "successes": successes,
             "pass_rate": successes / len(records) if records else 0.0,
+            "accuracy": successes / len(records) if records else 0.0,
+            "pass_at_3": (
+                sum(any(record.success for record in rows) for rows in triplets)
+                / len(triplets)
+                if triplets
+                else None
+            ),
+            "pass_all_3": (
+                sum(all(record.success for record in rows) for rows in triplets)
+                / len(triplets)
+                if triplets
+                else None
+            ),
+            "mean_steps": sum(steps) / len(steps) if steps else 0.0,
             "selection_digest": selection_digest(tasks),
             "mean_reward": sum(record.reward for record in records) / len(records)
             if records
@@ -265,31 +290,63 @@ async def pilot(args, config):
 
 
 async def evolve(args, config):
-    splits = modularrsi_splits(args.dataset_root, args.domain, int(config["seed"]))
-    evolve_tasks, dev_tasks = (
-        splits["evolve"][: args.max_evolve_tasks or None],
-        splits["dev"][: args.max_dev_tasks or None],
-    )
+    paper_protocol = config.get("protocol") == "modularrsi-paper-v1"
+    if paper_protocol:
+        evolution_tasks = modularrsi_paper_tasks(
+            args.dataset_root, args.domain, int(config.get("task_seed", 0))
+        )
+        evolve_tasks = evolution_tasks[: args.max_evolve_tasks or None]
+        dev_tasks = []
+    else:
+        splits = modularrsi_splits(args.dataset_root, args.domain, int(config["seed"]))
+        evolve_tasks, dev_tasks = (
+            splits["evolve"][: args.max_evolve_tasks or None],
+            splits["dev"][: args.max_dev_tasks or None],
+        )
     runner = FormalRunner(config, args.out)
     store, compiler = VersionStore(args.out / "lineage"), HarnessCompiler()
     active = store.initialize(HarnessSpec.baseline())
-    rollouts = args.rollouts or config["agent"]["rollouts_per_task"]
+    rollouts = args.rollouts or int(config["agent"].get("rollouts_per_task", 3))
     for generation in range(args.generations):
         prefix = f"generation-{generation:02d}"
         parent_evolve = await runner.run_tasks(
             evolve_tasks, active, prefix + "/parent-evolve", rollouts
         )
         unique = {}
-        for record, proposal in runner.diagnose(
-            parent_evolve, active, prefix + "/diagnosis"
-        ):
-            unique.setdefault(proposal.proposal_id, (record, proposal))
-        candidates = list(unique.values())[: args.candidates]
+        batch_size = int(
+            config.get("evolution_dataset", {}).get("batch_size", 10)
+            if paper_protocol
+            else len(parent_evolve) or 1
+        )
+        for batch_index in range(0, len(parent_evolve), batch_size):
+            batch = parent_evolve[batch_index : batch_index + batch_size]
+            for record, proposal in runner.diagnose(
+                batch, active, prefix + f"/diagnosis/batch-{batch_index // batch_size:02d}"
+            ):
+                unique.setdefault(proposal.proposal_id, (record, proposal))
+        candidates = list(unique.values())
+        if paper_protocol and args.locked_module:
+            candidates = [
+                item for item in candidates
+                if item[1].target_module.value == args.locked_module
+            ]
+        candidates = candidates[: args.candidates]
         if not candidates:
             break
-        parent_dev = await runner.run_tasks(
-            dev_tasks, active, prefix + "/parent-dev", rollouts
-        )
+
+        # The paper/GitHub protocol uses the 120-task train split directly and
+        # validates on the same fixed batch, rather than our optional 80/20/20
+        # internal gate.  The upstream launcher uses reflect_every=10.
+        if paper_protocol:
+            validation_tasks = evolve_tasks[: args.validation_tasks]
+            parent_validation = await runner.run_tasks(
+                validation_tasks, active, prefix + "/parent-validation", rollouts
+            )
+        else:
+            parent_validation = await runner.run_tasks(
+                dev_tasks, active, prefix + "/parent-dev", rollouts
+            )
+
         evaluated = []
         for index, (source_record, proposal) in enumerate(candidates):
             try:
@@ -317,15 +374,15 @@ async def evolve(args, config):
                 prefix + f"/candidate-{index:02d}-same-batch",
                 rollouts,
             )
-            candidate_dev = await runner.run_tasks(
-                dev_tasks,
+            candidate_validation = await runner.run_tasks(
+                validation_tasks if paper_protocol else dev_tasks,
                 compiled.child,
-                prefix + f"/candidate-{index:02d}-dev",
+                prefix + f"/candidate-{index:02d}-validation",
                 rollouts,
             )
             decision = _paired_gate(
-                parent_dev,
-                candidate_dev,
+                parent_validation,
+                candidate_validation,
                 same_parent,
                 candidate_same,
                 args.min_gain,
@@ -363,12 +420,14 @@ async def evolve(args, config):
         )
         if not decision.accepted:
             break
-    await runner.run_tasks(
-        splits["heldout"][: args.max_heldout_tasks or None],
-        active,
-        "frozen-internal-heldout",
-        rollouts,
-    )
+
+    if not paper_protocol:
+        await runner.run_tasks(
+            splits["heldout"][: args.max_heldout_tasks or None],
+            active,
+            "frozen-internal-heldout",
+            rollouts,
+        )
 
 
 async def text_reflection_baseline(args, config):
@@ -436,6 +495,18 @@ def parse_args():
         if name == "evolve":
             p.add_argument("--generations", type=int, default=3)
             p.add_argument("--candidates", type=int, default=3)
+            p.add_argument("--validation-tasks", type=int, default=10)
+            p.add_argument(
+                "--locked-module",
+                choices=(
+                    "agent_loop",
+                    "tool_use",
+                    "observation_management",
+                    "context_management",
+                    "completion_detection",
+                ),
+                help="Paper/GitHub module-wise run: keep proposals for one module only.",
+            )
             p.add_argument("--min-gain", type=float, default=0.01)
             p.add_argument("--max-regression", type=float, default=0.05)
         elif name == "gepa":
